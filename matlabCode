@@ -1,0 +1,142 @@
+% MUSIC FILE
+% Using wavread, we get the sampled data in y and the sample rate in Fs
+% length(y) = 212392
+% Fs = 44100
+[y, Fs] = wavread('popsong.wav');
+L = length(y);
+
+% We know that we have 212392 samples and a sampling frequency of 44100.
+% Then the duration of the wav file is 212392/44100 = 4.8161 s.
+
+% This creates a plot of the corresponding frequency vs the fourier
+% coefficients.
+[X, f] = fdomain(y, Fs);
+% figure
+% plot(f, X);
+% grid on
+% xlabel('Frequency (Hz)')
+% ylabel('Fourier coefficients')
+% title('Corresponding Frequency vs Fourier Coefficients')
+
+
+
+% We also want to look at the spectrogram of the corrupted wav file.
+% From the spectrogram, we can see that most of the noise occurs at
+% frequencies higher than 13,090 Hz.
+figure
+T = 0:1/44100:212392/44100;
+[S, F, T, P] = spectrogram(y, 256, 250, 256, 44100);
+surf(T, F, 10*log10(P), 'edgecolor', 'none');
+axis tight;
+view(0, 90);
+xlabel('Time (s)')
+ylabel('Frequency (Hz)')
+title('Spectrogram of Corrupted Wav File')
+
+
+
+% This creates a plot of the realtime waveform vector against the duration
+% of the wav file. This is the time-domain graph.
+[x,t] = tdomain(X,Fs);
+figure
+plot(t, x);
+grid on
+xlabel('Time (s)')
+ylabel('Real Time Waveform Vector')
+title('Time vs Waveform Vector of Corrupted File')
+
+
+
+% Filtering the Noise
+% We need to remove any signal whose frequency is not between -13090 Hz and
+% 13090 Hz. We used condense the range to between -11000 Hz and 11000 Hz
+% just in case.
+[b,a] = butter(64, 11000/22050);
+fixedWAV = filter(b, a, y);
+% To amplify the wav file, we multiply the amplitudes of each signal by
+% 1000.
+fixedWAV = fixedWAV.*1000;
+
+% Writes a wav file with the appropriate song
+% soundsc(fixedWAV, Fs);
+% wavwrite(fixedWAV, 44100, 'britney');
+
+
+
+% Plots for the cleaned up music sample
+[y1, Fs1] = wavread('britney.wav');
+[X1, f1] = fdomain(y1, Fs1);
+% Time-Domain Graph
+[x1,t1] = tdomain(X1,Fs1);
+figure
+plot(t1, x1);
+grid on
+xlabel('Time (s)')
+ylabel('Real Time Waveform Vector')
+title('Time vs Waveform Vector for Cleaned Sample')
+% Spectrogram
+figure
+T = 0:1/44100:212392/44100;
+[S, F, T, P] = spectrogram(y1, 256, 250, 256, 44100);
+surf(T, F, 10*log10(P), 'edgecolor', 'none');
+axis tight;
+view(0, 90);
+xlabel('Time (s)')
+ylabel('Frequency (Hz)')
+title('Spectrogram of Cleaned Sample')
+% Amplitude Spectrum
+psdest = psd(spectrum.periodogram, y1, 'Fs', Fs1);
+figure
+plot(psdest.Frequencies, psdest.Data);
+grid on
+xlabel('Hz')
+ydft = fft(y1);
+ydft = ydft(1:length(y1)/2+1);
+freq = 0:Fs1/length(y1):Fs1/2;
+plot(freq, abs(ydft));
+xlabel('Hz')
+ylabel('Amplitude')
+title('Amplitude Spectrum of Cleaned Sample')
+
+% Plotting the Bode Plot
+% In order to create a circuit that will filter out the noise, we can use
+% the fact that the time constant tau is equal to 1/(2*pi*f) and also
+% equivalent to R*C, where f is the cutoff frequency, R is the resistance,
+% and C is the capacitance. In our code, we filtered the music at 11000 Hz.
+% Then RC = 1/(2*pi*11000) = 1.45e-5 s. If we allow R = 0.005 ohms, then C
+% = 0.0029 farads.
+% For an RC filter, the transfer function is
+% V_out/V_in = 1/(1i*omega*R*C + 1), where omega = 2*pi*f = 69115 Hz
+P = bodeoptions;
+P.FreqUnits = 'Hz';
+num = [0 1];
+den = [0.0000145 1];
+sys = tf(num, den);
+h = bodeplot(sys, P);
+
+figure
+[I, map] = imread('Low-Pass RC Filter.png', 'png');
+imshow(I, map);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PIANO NOTE
+%This reads in the piano note
+% and uses audioread on the note
+pianonote = 'piano.m4a';
+[pianoY, fs]=audioread(pianonote);
+left = pianoY(:,1);
+right = pianoY(:,2);
+
+
+% This creates a plot of the realtime waveform vector against the duration
+% of the piano note. This is the time-domain graph.
+[pianoF,f]=fdomain(left,fs);
+[pianoT,t] = tdomain(pianoF,Fs);
+figure
+pianoT = pianoT(28000:length(t));
+t = t(28000:length(t));
+plot(t, pianoT);
+grid on
+xlabel('Time (s)')
+ylabel('Real Time Waveform Vector')
+title('Time vs Waveform Vector of Piano Note')
