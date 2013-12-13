@@ -26,7 +26,7 @@ L = length(y);
 figure
 T = 0:1/44100:212392/44100;
 [S, F, T, P] = spectrogram(y, 256, 250, 256, 44100);
-surf(T, F, 10*log10(P), 'edgecolor', 'none');
+%!!!!!!!surf(T, F, 10*log10(P), 'edgecolor', 'none');
 axis tight;
 view(0, 90);
 xlabel('Time (s)')
@@ -39,7 +39,7 @@ title('Spectrogram of Corrupted Wav File')
 % of the wav file. This is the time-domain graph.
 [x,t] = tdomain(X,Fs);
 figure
-plot(t, x);
+%!!!!!!!!plot(t, x);
 grid on
 xlabel('Time (s)')
 ylabel('Real Time Waveform Vector')
@@ -59,7 +59,7 @@ fixedWAV = fixedWAV.*1000;
 
 % Writes a wav file with the appropriate song
 % soundsc(fixedWAV, Fs);
-% wavwrite(fixedWAV, 44100, 'britney');
+%wavwrite(fixedWAV, 44100, 'britney');
 
 
 
@@ -69,7 +69,7 @@ fixedWAV = fixedWAV.*1000;
 % Time-Domain Graph
 [x1,t1] = tdomain(X1,Fs1);
 figure
-plot(t1, x1);
+%!!!!!!!!plot(t1, x1);
 grid on
 xlabel('Time (s)')
 ylabel('Real Time Waveform Vector')
@@ -78,7 +78,7 @@ title('Time vs Waveform Vector for Cleaned Sample')
 figure
 T = 0:1/44100:212392/44100;
 [S, F, T, P] = spectrogram(y1, 256, 250, 256, 44100);
-surf(T, F, 10*log10(P), 'edgecolor', 'none');
+%!!!!!!!surf(T, F, 10*log10(P), 'edgecolor', 'none');
 axis tight;
 view(0, 90);
 xlabel('Time (s)')
@@ -87,13 +87,13 @@ title('Spectrogram of Cleaned Sample')
 % Amplitude Spectrum
 psdest = psd(spectrum.periodogram, y1, 'Fs', Fs1);
 figure
-plot(psdest.Frequencies, psdest.Data);
+%!!!!!!!plot(psdest.Frequencies, psdest.Data);
 grid on
 xlabel('Hz')
 ydft = fft(y1);
 ydft = ydft(1:length(y1)/2+1);
 freq = 0:Fs1/length(y1):Fs1/2;
-plot(freq, abs(ydft));
+%!!!!!!!!plot(freq, abs(ydft));
 xlabel('Hz')
 ylabel('Amplitude')
 title('Amplitude Spectrum of Cleaned Sample')
@@ -112,11 +112,11 @@ P.FreqUnits = 'Hz';
 num = [0 1];
 den = [0.0000145 1];
 sys = tf(num, den);
-h = bodeplot(sys, P);
+%h = bodeplot(sys, P);
 
-figure
-[I, map] = imread('Low-Pass RC Filter.png', 'png');
-imshow(I, map);
+% figure
+% [I, map] = imread('Low-Pass RC Filter.png', 'png');
+% imshow(I, map);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %PIANO NOTE
@@ -127,7 +127,6 @@ pianonote = 'piano.m4a';
 left = pianoY(:,1);
 right = pianoY(:,2);
 
-
 % This creates a plot of the realtime waveform vector against the duration
 % of the piano note. This is the time-domain graph.
 [pianoF,f]=fdomain(left,fs);
@@ -135,8 +134,20 @@ right = pianoY(:,2);
 figure
 pianoT = pianoT(28000:length(t));
 t = t(28000:length(t));
+figure
 plot(t, pianoT);
 grid on
 xlabel('Time (s)')
 ylabel('Real Time Waveform Vector')
 title('Time vs Waveform Vector of Piano Note')
+
+%This creates the amplitude vs. frequency graph.
+for i=1:length(pianoF),
+    if pianoF(i) < -1050
+        pianoF(i)=0;
+    elseif pianoF(i) > 1050
+        pianoF(i)=0;
+    end
+end
+figure
+plot(f,pianoF)
