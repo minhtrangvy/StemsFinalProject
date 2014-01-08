@@ -1,0 +1,190 @@
+\documentclass[11pt,letterpaper,boxed]{hmcpset}
+
+% include this package to customize page layout of document (e.g. to adjust margins)
+\usepackage[margin=0.9in]{geometry}
+% include this to import graphics files with command \includegraphics
+\usepackage{graphicx, url}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+%\pagestyle{e
+%\pagestyle{fancy}
+
+
+% set numbering style for enumerated lists to be of form (a), (b), (c), etc.
+\renewcommand{\labelenumi}{{\bf (\alph{enumi})}}
+
+\newcommand{\ZZ}{\mathbb{Z}}
+\addtolength{\fboxsep}{3px}
+\numberwithin{equation}{section}
+% info for header block in upper right hand corner
+\newenvironment{myfont}{\fontfamily{pcr}\selectfont}{\par}
+\begin{document}
+\setlength{\parindent}{0pt}
+\begin{center}
+\LARGE
+TECHNICAL MEMORANDUM \\
+\vspace*{1\baselineskip}
+FILTERING MUSIC FILES WITH MATLAB \\
+\vspace*{1\baselineskip}
+\normalsize
+Group 23\\ Shannon Lin and MinhTrang Vy \\
+\begin{abstract}
+\textit{The recording record company, GG Records, was entrusted with the important task of recovering the lost track of Britney Spears. We fixed the music file by finding the noise and filtering it out with a low-pass filter in MATLAB. The music file sounded amazing, Britney was very thankful, and it became the number one it single on the top charts. We then modeled an electrical low-pass filter in order to see how we could filter this music file in real life. Britney was also hesitant about the efficiency of the piano to produce beautiful sounding music. However, our company believes that the piano is in tune. We calculated the natural frequency of a sample note and discovered that the note was in tune. GG Records concluded that our instruments are up to date and perfectly functional.}
+\end{abstract}
+\end{center}
+
+\section{Introduction}
+In this memorandum, we document our approach in analyzing the two music files we were provided: ‘popsong.wav’ and ‘piano.m4a’. The first problem was that the sound file, 'popsong.wav', was "corrupted" in terms of having noise and not being of production level quality. The goal for the 'popsong.wav' file was to filter the music so that we could get a quality sound track. \\
+
+The 'piano.m4a' was possibly not the right note (not the right frequency). In the second file, we aimed to prove that the music equipment we were given is working properly by showing that the note played by the audio signal is the correct note.
+
+\section{Background}
+Under the request of Britney Spears, we began to work on the track she had recorded in the studio - only to find that electronic interference had corrupted the sample. In order to prevent her from withdrawing her contract with the studio, we needed to find a method to produce a clean track by removing unwanted noise. After successfully recreating the track, the prima donna pop star claimed that the musical equipment in the studio was faulty. Using our knowledge of systems engineering, we proved to her that the piano was working properly.
+\pagebreak
+\section{Part 1: Pop Song}
+We used the following software in our project: MATLAB and Microsoft Excel.
+\subsection{Procedures}
+In order to extract information from this file, we used the {\fontfamily{pcr}\selectfont{wavread}} function in MATLAB to obtain the sampling frequency of the signal and the amplitude of each sample. Then we applied {\fontfamily{pcr}\selectfont{fdomain}}\footnote{{\fontfamily{pcr}\selectfont{fdomain}}, which takes in two arguments, vector of time domain samples and sampling rate, to computer the complex Fourier coefficients of the signal and its corresponding-frequencies. This function was taken from Cha and Mollinger.} to the vector of samples outputted by {\fontfamily{pcr}\selectfont{wavread}} so we could acquire the Fourier coefficient and corresponding frequency of each of the samples. Taking the {\fontfamily{pcr}\selectfont{tdomain}}\footnote{{\fontfamily{pcr}\selectfont{tdomain}} accepts a vector of complex Fourier coefficients and the sampling frequency to return the real time waveform vector of the signal and the length (or time) of the signal. This function was taken from Cha and Mollinger.} of the Fourier coefficients and sampling frequency allowed us to plot the time-domain graph of the signal. This plot can be seen in Figure 1. \\
+	\begin{center}
+	\includegraphics[scale=0.7]{figure1} \\
+	Figure 1. Time-Domain Graph of Corrupted WAV File.
+	\end{center}
+ Afterwards, we identified the minimum frequency of the noise in the track by plotting a spectrogram of the corrupted WAV file with frequency (in Hz) on the y-axis and time (in seconds) on the x-axis, as seen in Figure 2. The spectrogram shows us that the noise existed at a frequency equal to or higher than 13,090 Hz. In order to remove samples with these frequencies, we created a low-pass Butterworth filter of the $64^{th}$ order and a normalized cutoff frequency of 11000/22050 Hz. Note that this filter automatically removes the frequencies on both sides of our frequency spectrum. After applying the filter, we amplified the signal, which had previously been attenuated by 400 Hz, by 1000 Hz so it would be audible in the our WAV file for the cleaned track. Using the {\fontfamily{pcr}\selectfont{wavwrite}} function with the fixed samples, we generated a WAV file of the track without the noise. To ensure that the noise was removed properly, we created a time-domain graph, spectrogram, and amplitude spectrum of our altered sample for comparison.
+ 
+  \begin{center}
+  \includegraphics[scale=0.6]{corrupted_spect} \\
+  Figure 2. Spectrogram of Corrupted WAV File. The "MUDD" corresponds to the high frequencies that acted as noise in the corrupted sound file.
+  \end{center}
+  
+Finally, we wanted to design a model for an electrical circuit that would be able to perform the same task as our low-pass Butterworth filter. To do this, we had to realize the relationship among the cutoff frequency, resistance, and capacitance:
+$\displaystyle \tau = RC = \frac{1}{2 \pi f_c}$ \\
+
+Therefore, our circuit consisted of only two components: the resistor and the capacitor. Because we already obtained a value for the cutoff frequency, 11000 Hz, we could plug in reasonable values for R to get possible values for C. We selected a resistance of 500 $\Omega$ and its corresponding capacitance of $2.9 x 10^{-8}$ F. Then we plotted a Bode plot of the circuit with MATLAB’s bodeplot function to ascertain the validity of our values.
+
+\subsection{Results}
+From Figure 2, it is clear that the “MUDD” in the track appears at frequencies above 13090 Hz. We also remove the samples whose frequencies are less than -13090 Hz, because the "high"/"noise" frequencies referred to frequencies that were above the absolute value of 13090 Hz. After applying our Butterworth filter, the noise appears to be gone in the spectrogram of our new signal:
+	\begin{center}
+	\includegraphics[scale=0.6]{cleanSpect.jpg} \\
+	Figure 3. Spectrogram of Cleaned Track
+	\end{center}
+We also created a time-domain graph, which is shown in Figure 4. The altered samples reflected in the time-domain graph seem much more erratic than the samples in the corrupted signal; it consists of sharp peaks and fluctuations that are expected in typical audio files.
+	\begin{center}
+	\includegraphics[scale=0.7]{realWAVCleaned.jpg} \\
+	Figure 4.  Time-Domain Graph of Cleaned Track
+	\end{center}
+The amplitude spectrum in Figure 5 also provides us with further evidence that we had successfully removed all frequencies above 13,090 Hz. This is only one side of the two-sided amplitude spectrum, but the Butterworth filter removes the unwanted frequencies on both sides. Therefore, we know that frequencies below -13,090 Hz have been removed as well.
+	\begin{center}
+	\includegraphics[scale=0.7]{amplitudeCleaned.jpg} \\
+	Figure 5.  Amplitude Spectrum of Cleaned Track
+	\end{center}
+\vspace{20 pt}
+\subsection{Modeling Technique}
+To model our Butterworth filter, we had to determine what electrical components were required in our electrical circuit. Because a relationship among cutoff frequency, capacitance, and resistance exists, we decided that we could use an RC circuit to model the Butterworth filter. Recall that we used a cutoff frequency of 11,000 Hz. Plugging this into the formula provided in the procedure, RC = $1.45 x 10^{-5}$ s. Resistors found in industry typically range from 100 $\Omega$ to 1000 $\Omega$, so we set R = 500 $\Omega$ and found a corresponding value for C, which turned out to be C = $2.98 x 10^{-8}$ F.
+
+\subsection{Results of Modeling}
+Below is the design for our low-pass RC Filter.
+	\begin{center}
+	\includegraphics[scale=0.7]{lowPassFilter.jpg} \\
+	Figure 6.  RC Low-Pass Filter
+	\end{center}
+The transfer function for a low-pass filter is $\displaystyle \frac{V_{out}}{V_{in}} = \frac{1}{j\omega RC +1} $\\
+
+By plotting this function against the magnitude and phase, we obtain the Bode plot in Figure 7.
+	\begin{center}
+	\includegraphics[scale=0.75]{bode.jpg} \\
+	Figure 7. Bode plot of our electrical model of a low-pass filter.
+	\end{center}
+
+\subsection{Analysis}
+In the procedure, it may have seemed as if there was an inconsistency in our cutoff frequency. Although the noise exists at frequencies higher than 13,090 Hz, we use a cutoff frequency of 11,000 Hz in our Butterworth filter. Our reason for doing this is that the Butterworth filter is unable to mimic an ideal filter in that it contains a transition region in its band pass. In other words, it cannot remove strictly the samples with frequencies that are higher than 13,090 Hz or lower than -13,090 Hz, because the transmission function has roll-off. Instead, we set the cutoff frequency to 11,000 Hz so that we could be certain that all the noise was removed. \\
+
+When we compare the graphs of the corrupted track with those of the cleaned track, it is evident that much of the noise has been removed. In the time-domain graph of the corrupted track (Figure 1), it appears as if there is a casing produced by the noise around the signal, because the edges are all rounded. After applying the filter, this unnatural case is not present in the new time-domain graph. \\
+
+When we compare the spectrogram of the corrupted track (Figure 2) with that of the cleaned track (Figure 3), the obvious discrepancy is that the “MUDD” is gone in Figure 3. Samples of higher frequency are no longer as prominent in the spectrogram, because the noise contributed to much of the high frequency samples in the track. The amplitude spectrum (Figure 5) also shows that the samples of high frequency have been removed. There is still blue coloring on the top of the spectrogram of the cleaned music file even after we had cut off as much of the high frequency as we dared to. We attribute this phenomenon to some unknown trace of the noise that we have not filtered out, in fear of damaging the actual track. \\
+
+As for our model: the method of filtering the frequencies with an RC circuit makes sense, because the capacitor has enough time to charge to the same voltage as $V_{in}$ at low frequencies. However, at high frequencies, the capacitor is unable to charge to $V_{in}$ before the input alters its direction. These high frequencies are then unable to pass through. \\
+
+The Bode plot (Figure 7) also shows that our Butterworth filter is working properly, because our value for RC is $1.45 x 10^{-5}$ s. In the magnitude vs frequency graph, the slope of the line slants downward. This indicates how the low-pass filter cuts off the high frequencies, by having a gradual decrease of the higher frequencies. If we want the slope to be steeper (meaning we want the low-pass filter to filter out more of the high frequencies while not filtering out any more of the frequencies under our cutt off), then we would need to use a second order system. Using a second order system as opposed to a first order system (which is what we currently have) has its own advantages and disadvantages. These pros and cons will be discussed further in the Recommendations section of this report.
+\pagebreak
+\section{Part 2: Piano Note}
+\subsection{Procedures}
+The piano note was loaded into MATLAB using its built in function, {\fontfamily{pcr}\selectfont{audioread}}, which gave back the sampled data and the frequency at which the data was sampled (Fs). {\fontfamily{pcr}\selectfont{fdomain}} was then used to get the complex Fourier coefficients and corresponding frequencies from the sampled data. The sampled data was plotted against the frequencies found from {\fontfamily{pcr}\selectfont{fdomain}} in Figure 8 below. 
+	\begin{center}
+	\includegraphics[scale=0.5]{pianoSample.jpg} \\
+	Figure 8. A plot of the sampled data of the piano note against the corresponding frequencies found in {\fontfamily{pcr}\selectfont{fdomain}}.
+	\end{center}
+The goal was to find the natural frequency and damping factor ($\omega_n$ and $\zeta$). We have two unknown variables. So we need two equations that are dependent on $\omega_n$ and $\zeta$. We can use these two equations: 
+\begin{align} \omega_d &= \omega_n \sqrt{1-\zeta^2} \end{align}
+\begin{align} y(t) &= y_0e^{-\zeta \omega_n t} \sqrt{\frac{1}{1-\zeta^2}} \end{align}
+For Equation (4.1) , we can use the damping frequency found from looking at the highest amplitude in the Amplitude vs. Frequency graph for the piano note (Figure 9).
+	\begin{center}
+	\includegraphics[scale=0.85]{pianoAmplitude.jpg} \\
+	Figure 9. The Amplitude vs. Frequency plot generated from the {\fontfamily{pcr}\selectfont{fdomain}} function. 
+	\end{center}
+We can see that $\omega_d$ is 259.3 Hz. Now we can move onto finding the envelope of the signal because if we find the values for Eq. (4.2) listed above\footnote{Taken from "Harmonic Response"}, then we can solve for $\omega$n and $\zeta$. To fit the envelope to the sample, we found the values of the maximum peaks of the sample (the graph in Figure 3) because the envelope should enclose the entire sample. We did this in Microsoft Excel. The points we found are shown below: 
+	\begin{center}
+	\includegraphics[scale=0.85]{excelPeaks.jpg} \\
+	Figure 10. These are the values of the sampled signal Figure 3 that we plotted in Excel. 
+	\end{center}
+The data points gave the following curve. We then fitted an exponential curve to the points because the envelope for the signal is supposed to be a decaying exponential. The exponential curve can be seen in Figure 6. 
+	\begin{center}
+	\includegraphics[scale=0.9]{pianoEnvelope.jpg} \\
+	Figure 11. These are the values of the sampled signal Figure 3 that we plotted in Excel. The "x from {\fontfamily{pcr}\selectfont{fdomain}}" refers to the Fourier coefficients found from the {\fontfamily{pcr}\selectfont{fdomain}} function. The exponential was set with a y-intercept of 1.0 because the first maximum peak skewed the exponential into having a greater initial slope that it should have had.
+	\end{center}
+
+\subsection{Results}
+The Excel decaying exponential trendline gave us Equation (3.2). The only part of the equation that matters is the exponential because we know that is equal to $-\omega_n * \zeta$. Therefore, $0.864 = \omega_n * \zeta$. So we have two equations and can now solve for $\omega_n$ and $\zeta$,
+\begin{align} 259.3 &= \omega_n \sqrt{1-\zeta^2} \end{align}
+\begin{align} 0.864 = \omega_n \zeta \end{align}
+We find, after plugging the equations into WolframAlpha, that $\zeta = 0.0033320$ and $\omega_n$ = 259.3037. $\omega_n$ seems to be pretty close to $\omega_d$. However, if we round $\zeta = 0.0033$, then we get that $\omega_n$ = 261.82. \\
+
+This frequency corresponds to Middle C because the natural frequency of Middle C is 262. Even without the rounding on zeta, we can see that the note is \textbf{Middle C}.
+
+\subsection{Analysis}
+We found that $\zeta$ is about 0.003 from the equations listed above, which makes sense because the plot in Figure 3 is clearly underdamped, so $\zeta$ should be between 0 and 1. If zeta is close to 0, then it is close to being undamped and would oscillate around the steady state forever. So if our $\zeta$ is really small, that means the system is close to being undamped and would oscillate a lot. Consequently, it also makes sense that $\zeta$ is close to 0 because the data oscillates around the steady state a lot, because there are a lot of waves in the graph. \\
+
+We also found from the piano note is Middle C, because that is the closest note to the natural frequency that we found (261 Hz). The range of frequency offset that the human ear can detect is $\pm$3 Hz. From our calculations, the frequency of the piano note is between 259 Hz and 265 Hz. Therefore, we conclude that the note is Middle C and can be detected by the human ear as Middle C. Thus, the entire piano is in tune.
+
+\section{Conclusion and Recommendations}
+ In conclusion, we learned value lessons on how to analyze and manipulate audio files in MATLAB. More significantly, we gained insight on how to assess sound files in a methodical fashion so that we could extract the information we need in order to improve what we were given. We learned how to extract noise from music files by utilizing a program freely available to us, MATLAB, and became more familiar with its built-in capability to work with filters. \\
+
+ We also learned how to analyze a given signal (the piano note) with the features we learned ($\omega_n, \omega_d, \zeta$). Throughout this project, we learned a lot about signals and sampling sound. We also learned how to filter signals physically, with an electronic model of a low-pass filter. We gained a better understanding of the material we learned about different systems and their parameters (damping frequency, natural frequency, and damping factors) in E59. This project was an enlightening experience. 
+ 
+\subsection{Recommendations for Pop Song}
+The Butterworth filter contains a transition region. It is unable to create a rectangular band where everything in the band will be fully transmitted and everything outside in the band will be completely attenuated. Due to the roll-off in the filter, some of the track may be removed. In order to minimize this, we selected the maximum cutoff frequency that would successfully remove all the noise, but also retain as much of the higher frequency samples that belong in the track. \\
+
+We increased roll-off of our filter’s band by increasing order to 64. However an order of 64 means we would have 64 capacitors. This is not very practical in terms of time and cost. As can be seen from the equation of a 64th order filter, we would have to have $C^{64}$, which means that we would need 64 capacitors. \\
+
+Cost: This is not very efficient in terms of cost because we would have to buy a lot more capacitors than a first order filter would need. This would also affect how many resistors we would need and how much wiring we would need to have to make this filter work. \\
+
+Time: This is also not effective in terms of time because of the amount of time that it would take to create a product with so many capacitors. Also, the data would have to be filtered at each capacitor (by allowing the low-frequencies to pass through and not allowing the high frequencies to pass through). \\
+
+Size: A high order filter would not be efficient in terms of size, because we would have to create a product that could fit a lot of capacitors on a circuit board. \\
+
+Therefore, even though the 64th order filter is much more effective in filtering out high frequencies, it is disadvantageous when we consider the physical implications of having an actual electrical circuit with 64 capacitors. 
+
+\subsection{Recommendations for Piano Note}
+We found $\omega_n$ and $\zeta$ by basically eyeballing the maximum peaks of the wave file produced by reading the piano note with {\fontfamily{pcr}\selectfont{audioread}}. One thing we could have done instead is use the {\fontfamily{pcr}\selectfont{peaks}} function in order to grab the maximum points of the wave. This built in MATLAB function might have been more accurate. \\
+
+Also, we accounted for the extraneous data points before the note was played by setting the y-intercept of the exponential trendline in Excel to be 1.0. However, the unnecessary data points could have been cut off in the actual data set itself with MATLAB, to perhaps gain a better fit of the exponential decay equation. \\
+
+Despite these possible flaws that could be remedied if necessary, the data shows that the piano is in tune. It can play notes with the correct frequency. This piano will make Britney's performance just as amazing as any other piano. We highly recommend this piano.\\
+
+\begin{thebibliography}{1}
+\bibitem{1} Candler, Catherine Tsai. "Milestone Meetings." E059 Milestone Meetings. CA, Claremont. 13 Dec. 2013. Lecture.
+\bibitem{2} Cha, Philip D., and John I. Molinder. Fundamentals of Signals and Systems: A Building Block Approach. Cambridge, UK: Cambridge UP, 2006. Print.
+\bibitem{3} "Connect MATLAB and Simulink to Hardware." MathWorks. N.p., n.d. Web. 20 Dec. 2013.
+\bibitem{4}"Harmonic Response." Harmonic Response. N.p., n.d. Web. 20 Dec. 2013.
+\bibitem{5}"RC Low Pass Filter." Filter Circuits with Capacitors. N.p., n.d. Web. 20 Dec. 2013.
+\end{thebibliography}
+
+\section{Appendix: MATLAB Code}
+	\includegraphics{code4.pdf}
+	\pagebreak
+	\includegraphics[scale=0.9]{code5.pdf}
+	\pagebreak
+	\includegraphics[scale=0.9]{code6.pdf}
+\end{document}
+
+
